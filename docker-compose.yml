@@ -1,0 +1,39 @@
+version: '3.7'
+
+networks:
+  my_network:  # Definindo a rede personalizada
+    driver: bridge
+
+services:
+  mysql:
+    image: mysql:8.0.30
+    container_name: mysql_rick
+    environment:
+      MYSQL_ROOT_PASSWORD: admin!123   # Senha do root do MySQL
+      MYSQL_DATABASE: rick_db        # Nome do banco de dados
+      MYSQL_USER: admin               # Nome do usuário MySQL
+      MYSQL_PASSWORD: admin!123        # Senha do usuário MySQL
+    ports:
+      - "3306:3306"                  # Mapeamento da porta do MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql    # Volume para persistência dos dados
+    networks:
+      - my_network  # Adicionando o serviço à rede personalizada
+
+  quarkus_app:
+    build:
+      context: . # Build do contexto atual
+      dockerfile: Dockerfile
+    container_name: quarkus_app
+    ports:
+      - "8080:8080"  # Mapeamento da porta da aplicação Quarkus
+    depends_on:
+      - mysql  # Dependência do MySQL
+    volumes:
+      - maven_cache:/root/.m2  # Volume para o cache do Maven
+    networks:
+      - my_network  # Adicionando o serviço à rede personalizada
+
+volumes:
+  mysql_data:
+  maven_cache:
